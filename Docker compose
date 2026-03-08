@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  newsgroups-search:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: newsgroups-semantic-search
+    ports:
+      - "8000:8000"          # host:container
+    environment:
+      - CACHE_THRESHOLD=0.85 # similarity threshold for cache hits
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s      # give time for model loading on first start
