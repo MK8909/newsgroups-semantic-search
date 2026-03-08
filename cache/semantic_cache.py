@@ -1,68 +1,4 @@
-"""
-Part 3: Semantic Cache
-======================
 
-DESIGN DECISIONS:
-
-1. WHAT THE CACHE STORES
-   Each cache entry records:
-   - The original query text
-   - The L2-normalised query embedding vector
-   - The dominant cluster and full membership distribution
-   - The computed result (top-k retrieved document IDs + snippets)
-   - Access statistics (timestamp, hit count)
-
-2. HOW CACHE LOOKUP WORKS
-   For a new query q:
-   a) Embed q to vector v_q
-   b) Identify the dominant cluster: c* = argmax(membership(v_q))
-   c) Search ONLY the entries whose dominant cluster == c* (cluster-restricted lookup)
-   d) For each candidate, compute cosine similarity with v_q
-   e) If max similarity ≥ threshold θ: cache HIT, return stored result
-   f) Otherwise: cache MISS, compute result, store, return
-
-   WHY CLUSTER-RESTRICTED LOOKUP?
-   Without cluster routing, cache lookup is O(n_entries) per query.  With cluster
-   routing, it is O(n_entries / k) on average — 15x faster for k=15.  More
-   importantly, it avoids cross-cluster false positives: "rocket fuel" and
-   "fossil fuel" both contain "fuel" but belong to different clusters (space vs
-   energy/politics); cosine similarity alone might match them spuriously.
-
-3. THE KEY TUNABLE PARAMETER: similarity threshold θ
-   θ ∈ (0, 1) is the single most important design choice.
-
-   LOW θ (e.g. 0.7):
-   - More cache hits: "what is the best sci-fi novel" hits on "recommend me a book"
-   - Risk: returns stale or semantically divergent results
-   - The cache behaves like a "topic-level" cache: it returns results for the
-     general topic area even when the query is specific
-
-   HIGH θ (e.g. 0.95):
-   - Fewer hits: only near-verbatim rephrases are matched
-   - Precise but wasteful: defeats the purpose of semantic caching
-   - At θ=1.0 it degenerates to exact-string matching
-
-   θ=0.85 is our production default — it matches genuine paraphrases
-   ("How do rockets get to orbit?" matches "rocket launch orbital mechanics?")
-   without false positives.
-
-   The exploration below shows what each threshold value reveals:
-   - θ=0.70: ~65% hit rate on our test queries (too aggressive, quality suffers)
-   - θ=0.80: ~45% hit rate (good trade-off)
-   - θ=0.85: ~30% hit rate (conservative, high quality)
-   - θ=0.90: ~15% hit rate (very precise, rarely fires)
-   - θ=0.95: ~5% hit rate (near-verbatim only)
-
-4. DATA STRUCTURE
-   The cache is a dict keyed by cluster_id → list of CacheEntry.
-   This directly implements the cluster-based partitioning.  Each cluster
-   bucket is a simple list (no hash collision issues since we use similarity
-   not equality).  An LRU eviction policy with max_size is applied per bucket.
-
-5. NO EXTERNAL LIBRARIES
-   Everything is implemented with Python stdlib + numpy.  No Redis, Memcached,
-   diskcache, dogpile, or any other caching middleware.
-"""
 
 import json
 import time
@@ -212,15 +148,7 @@ class SemanticCache:
     # Core cache operations
     # -------------------------------------------------------------------------
     def lookup(self, query: str) -> tuple:
-        """
-        Look up a query in the cache.
-
-        Returns
-        -------
-        (hit: bool, entry: CacheEntry | None, similarity: float)
-          If hit: entry is the matched CacheEntry, similarity is cosine sim
-          If miss: entry is None, similarity is the best candidate sim (for logging)
-        """
+       
         self._total_lookups += 1
 
         # Embed query
