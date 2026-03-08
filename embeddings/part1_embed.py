@@ -1,44 +1,4 @@
-"""
-Part 1: Corpus Preprocessing + TF-IDF Embedding + Vector Store
-===============================================================
 
-DESIGN DECISIONS (code comments are the spec):
-
-1. EMBEDDING MODEL: TF-IDF with SVD (Latent Semantic Analysis / LSA)
-   - We cannot download sentence-transformers (no network).
-   - TF-IDF + SVD is the canonical offline baseline for newsgroup semantic search;
-     it is what the original 20-newsgroups benchmarks used.
-   - 300 LSA components capture ~85% of variance on this corpus; beyond ~400
-     the marginal gain is negligible while memory grows linearly.
-   - L2-normalised SVD vectors support cosine similarity via simple dot product.
-
-2. WHAT WE DISCARD (preprocessing decisions):
-   a) Email headers / footers / quoted lines (> prefix) — they are meta-noise,
-      not semantics.  A doc like "> John wrote: > > Yes." has ZERO signal.
-   b) Tokens shorter than 3 characters — abbreviations like "re:", "in", "is"
-      add no discriminative power and inflate vocabulary.
-   c) Tokens appearing in fewer than 5 documents (min_df=5) — hapax legomena
-      are typically typos or one-off proper nouns.  They bloat the vocabulary
-      without improving clustering or retrieval.
-   d) Tokens appearing in more than 90% of documents (max_df=0.9) — ultra-high
-      frequency terms ("the", "and", "wrote") are stop words by usage even if
-      they pass the standard stop-word list.
-   e) Numeric tokens: pure numbers (1994, 42) have no semantic value in this
-      corpus; article IDs, prices and counts create false similarity.
-
-3. VECTOR STORE: We implement a minimal but functionally complete vector store
-   (class VectorStore) backed by numpy arrays.  It supports:
-     - add_documents(ids, vectors, metadata)
-     - query(vector, n_results, filter)  → cosine similarity search
-     - get_by_ids(ids)
-     - persist / load (numpy .npz + json sidecar)
-   This is intentionally ChromaDB-compatible in API shape so the rest of the
-   pipeline could swap in a real vector DB with minimal changes.
-
-4. SUBSET SIZE: We embed all ~18k documents.  Subsampling would hurt clustering
-   coverage; this corpus is small enough that full embedding is fast (< 30s on
-   a single CPU core).
-"""
 
 import json
 import os
@@ -55,7 +15,7 @@ from sklearn.preprocessing import normalize
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-BASE_DIR = Path("/home/claude/newsgroups_search")
+BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
 EMBED_DIR = BASE_DIR / "embeddings"
 EMBED_DIR.mkdir(exist_ok=True)
@@ -163,23 +123,8 @@ def build_tfidf(cleaned_docs: list, n_components: int = 300):
 # Step 4: Minimal Vector Store
 # ---------------------------------------------------------------------------
 class VectorStore:
-    """
-    Minimal in-process vector store backed by numpy arrays.
-
-    Supports:
-      - add_documents(ids, vectors, metadata)
-      - query(vector, n_results, filter_fn)  → cosine similarity search
-      - get_by_ids(ids)
-      - persist(dir) / VectorStore.load(dir)
-
-    Cosine similarity is computed via batched matrix multiplication on L2-
-    normalised vectors, which is O(n_docs * d) per query.  For 18k documents
-    and d=300, that is ~5M FLOPs — fast enough (< 5ms) without an index.
-    A proper ANN index (FAISS / HNSW) would be warranted at >1M documents.
-
-    The store is intentionally simple; its API mirrors the ChromaDB collection
-    API so it could be swapped out with a real vector DB in one function.
-    """
+    
+   
 
     def __init__(self):
         self._ids: list = []
@@ -355,4 +300,3 @@ def run_part1():
 
 if __name__ == "__main__":
     run_part1()
-  
