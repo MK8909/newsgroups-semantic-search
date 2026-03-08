@@ -44,6 +44,10 @@ DESIGN DECISIONS:
    diluting the cache routing signal.
 """
 
+
+
+
+
 import json
 import pickle
 import time
@@ -55,7 +59,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
-BASE_DIR = Path("/home/claude/newsgroups_search")
+BASE_DIR = Path(__file__).parent.parent
 EMBED_DIR = BASE_DIR / "embeddings"
 CLUSTER_DIR = BASE_DIR / "data" / "clusters"
 CLUSTER_DIR.mkdir(parents=True, exist_ok=True)
@@ -425,3 +429,4 @@ def run_part2():
 
 if __name__ == "__main__":
     run_part2()
+
