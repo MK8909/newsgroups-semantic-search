@@ -1,0 +1,15 @@
+# Generated data (too large for git)
+data/
+embeddings/*.npy
+embeddings/*.pkl
+embeddings/vector_store/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+
+# OS
+.DS_Store
