@@ -1,16 +1,4 @@
-"""
-app_fastapi.py — FastAPI version of the Newsgroups Semantic Search Service
-===========================================================================
 
-This module requires:
-  pip install fastapi uvicorn pydantic
-
-Start with:
-  uvicorn api.app_fastapi:app --host 0.0.0.0 --port 8000
-
-The business logic is IDENTICAL to api/app.py; only the routing layer differs.
-The AppState singleton from app.py is reused directly.
-"""
 
 try:
     from fastapi import FastAPI, HTTPException
