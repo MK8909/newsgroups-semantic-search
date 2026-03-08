@@ -1,0 +1,13 @@
+# Core dependencies
+numpy>=1.24
+scipy>=1.10
+scikit-learn>=1.2
+pandas>=1.5
+
+# Web framework (for FastAPI version)
+fastapi>=0.100
+uvicorn[standard]>=0.23
+pydantic>=2.0
+
+# Optional: better progress bars
+tqdm>=4.65
