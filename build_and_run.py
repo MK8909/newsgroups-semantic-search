@@ -1,27 +1,4 @@
-#!/usr/bin/env python3
-"""
-build_and_run.py
-================
-Single-entry-point script that runs the full pipeline:
-  1. Generate corpus
-  2. Build TF-IDF embeddings + vector store  (Part 1)
-  3. Fuzzy clustering                         (Part 2)
-  4. Start the HTTP service                   (Part 4)
-     (Part 3 cache is initialised inside the service)
 
-Usage:
-  # Full pipeline + start server (default port 8000)
-  python3 build_and_run.py
-
-  # Skip corpus/embedding rebuild (use cached outputs)
-  python3 build_and_run.py --skip-build
-
-  # Custom port + threshold
-  python3 build_and_run.py --port 8080 --threshold 0.80
-
-  # With FastAPI/uvicorn (if installed):
-  uvicorn api.app_fastapi:app --host 0.0.0.0 --port 8000
-"""
 
 import argparse
 import sys
@@ -84,4 +61,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-  
