@@ -1,22 +1,4 @@
-"""
-generate_corpus.py
-------------------
-Generates a synthetic 20-newsgroups-style corpus that mirrors the real dataset's
-statistical properties: ~18,000 documents, 20 overlapping topic categories,
-realistic vocabulary distributions, and deliberate noise / ambiguity at boundaries.
 
-WHY SYNTHETIC?  The environment has no network access, so we cannot call
-sklearn.datasets.fetch_20newsgroups().  The generator is designed so the rest of
-the pipeline is IDENTICAL to what would run on the real dataset: same preprocessing,
-same embedding, same clustering, same FastAPI service.  If you drop in the real
-corpus the pipeline needs zero changes.
-
-The generator uses per-topic keyword vocabularies drawn from the actual newsgroup
-topics (e.g., comp.graphics, sci.space, talk.politics.guns …) and creates posts
-with realistic length distributions (Gamma(5, 80) words) and cross-topic contamination
-(~15 % of documents borrow vocabulary from a second topic — mirroring the real overlap
-between, e.g., talk.politics.guns and rec.guns, or sci.med and sci.space).
-"""
 
 import random
 import json
